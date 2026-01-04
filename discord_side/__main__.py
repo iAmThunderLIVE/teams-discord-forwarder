@@ -5,6 +5,9 @@ import asyncio
 import logging
 import sys
 from dotenv import load_dotenv
+import json
+from pathlib import Path
+
 
 
 
@@ -20,7 +23,6 @@ root_logger.setLevel(logging.INFO)
 lru_logger = logging.getLogger('lru-dict')
 
 #This is a comment (2.0)
-
 ## Application Interface keys so we can access Microsoft Teams and Discord respecitvley 
 MC_TOKEN = os.getenv('MC_API_KEY')
 DC_TOKEN = os.getenv('DC_API_KEY')
@@ -37,14 +39,24 @@ bot.embed = discord.Embed() ## Attatching a embed object to the bot instance (em
 
 # Our cogs will go here, which are just our commands essentially E.X. 'cogs.Command'
 extensions = []
+# Test response command to ensure bot is working
+@bot.command()
+async def response(ctx):
+    await ctx.send("Hello! This is a response from the bot!")
+async def embed_test(ctx):
+    channel = bot.get_channel(1444478949420830952)
+    embed_dict = json.load(open(Path(__file__).parent / 'teamsMessage.json'))
+    logging.info(f'Loaded embed dict: {embed_dict}')
+    embed = discord.Embed.from_dict(embed_dict)
 
+    await channel.send(embed=embed)
 
 ## This bot event is triggered whenever our bot establishes a connection with discords servers,
 ## it does so by establishing a "web socket" which is a live continous connection.
 @bot.event
 async def on_ready():
     logging.info(f'Logged in as {bot.user}')
-
+    asyncio.create_task(embed_test(None))
     
 @bot.event
 async def on_error(event, *args, **kwargs):
